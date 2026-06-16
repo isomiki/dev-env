@@ -24,17 +24,6 @@ RUN mkdir -p /etc/ssh /root/.ssh \
 # Install AI agents
 RUN npm install -g @anthropic-ai/claude-code opencode-ai @openai/codex openclaw @devcontainers/cli
 
-# Create ai wrapper
-# RUN printf '%s\n' '#!/bin/bash' \
-#     'case "$1" in' \
-#     '    claude) tmux new -s claude 2>/dev/null || tmux attach -t claude; claude-code ;;' \
-#     '    opencode) tmux new -s opencode 2>/dev/null || tmux attach -t opencode; opencode-ai ;;' \
-#     '    codex) tmux new -s codex 2>/dev/null || tmux attach -t codex; codex ;;' \
-#     '    openclaw) tmux new -s openclaw 2>/dev/null || tmux attach -t openclaw; openclaw ;;' \
-#     '    *) echo "Available: claude, opencode, codex, openclaw"; exit 1 ;;' \
-#     'esac' > /root/ai \
-#     && chmod +x /root/ai
-
 # Start
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
