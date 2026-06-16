@@ -9,8 +9,9 @@ mkdir -p /root/.ssh
 chmod 700 /root/.ssh
 
 # Inject pubkey on first run
-if [ -n "$DEFAULT_SSH_PUBLIC_KEY" ] && [ ! -f /root/.ssh/authorized_keys ]; then
-    echo "$DEFAULT_SSH_PUBLIC_KEY" > /root/.ssh/authorized_keys
+if [ -n "$DEFAULT_SSH_PUBLIC_KEY" ]; then
+    grep -qxF "$DEFAULT_SSH_PUBLIC_KEY" /root/.ssh/authorized_keys 2>/dev/null \
+        || echo "$DEFAULT_SSH_PUBLIC_KEY" >> /root/.ssh/authorized_keys
     chmod 600 /root/.ssh/authorized_keys
 fi
 
