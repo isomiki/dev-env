@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install base packages + Node.js 22
 RUN apt update && apt install -y --no-install-recommends \
-    git curl python3 python3-pip openssh-server tmux sudo less neovim jq htop \
+    git curl python3 python3-pip openssh-server tmux zsh sudo less neovim jq htop \
     ca-certificates gnupg build-essential libssl-dev pkg-config libsasl2-2 libnss3 ranger \
     && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs \
