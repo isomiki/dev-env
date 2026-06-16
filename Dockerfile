@@ -36,6 +36,7 @@ RUN npm install -g @anthropic-ai/claude-code opencode-ai @openai/codex openclaw 
 #     'esac' > /root/ai \
 #     && chmod +x /root/ai
 
-# Start SSH daemon
-CMD ["/usr/sbin/sshd", "-D"]
-
+# Start
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+CMD ["/entrypoint.sh"]
