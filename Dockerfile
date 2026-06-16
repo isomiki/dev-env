@@ -13,7 +13,6 @@ RUN apt update && apt install -y --no-install-recommends \
 
 # Set up SSH
 RUN mkdir -p /etc/ssh /root/.ssh \
-    && ssh-keygen -A \
     && chmod 700 /root /root/.ssh \
     && sed -i 's/^[#[:space:]]*PermitRootLogin.*$/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config \
     && sed -i 's/^[#[:space:]]*PasswordAuthentication.*$/PasswordAuthentication no/' /etc/ssh/sshd_config \
