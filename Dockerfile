@@ -7,7 +7,9 @@ RUN apt update && apt install -y --no-install-recommends \
     git curl python3 python3-pip openssh-server tmux sudo less neovim jq htop \
     ca-certificates gnupg build-essential libssl-dev pkg-config libsasl2-2 libnss3 ranger \
     && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set up SSH
 RUN mkdir -p /etc/ssh /root/.ssh \
