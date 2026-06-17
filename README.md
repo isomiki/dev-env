@@ -11,7 +11,7 @@ docker compose up -d
 SSH in:
 
 ```bash
-ssh -p 60001 root@<host>
+ssh root@<host>
 ```
 
 ## Setup
@@ -19,8 +19,9 @@ ssh -p 60001 root@<host>
 - Not on Coolify? The service references named volumes `home→/root` and `docker-data→/var/lib/docker` but there's no top-level `volumes:` block (Coolify provisions them). Add one yourself, or `/root` (host keys, `authorized_keys`) and your Docker images won't persist.
 - Runtime env vars (set them in Coolify, or however you run the container):
   - `DEFAULT_SSH_PUBLIC_KEY` (required) — your pubkey, injected into `authorized_keys`.
+  - `SSH_PORT` (required) — host port mapped to container `22`.
   - `DOCKER_REGISTRY_TOKEN` (optional) — for a private registry; exposed in your login shell so you can log in manually, e.g. `echo "$DOCKER_REGISTRY_TOKEN" | docker login ghcr.io -u <user> --password-stdin`.
-- Ports default to `60001→22` (ssh) and `3001→3000` (your app); change in `compose.yaml` if they clash.
+  - `APP_PORT` (optional, default `3000`) — host port mapped to your app's container `3000`.
 
 ## Notes
 

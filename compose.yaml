@@ -12,8 +12,8 @@ services:
       - 'home:/root'
       - 'docker-data:/var/lib/docker'
     ports:
-      - '3001:3000'
-      - '60001:22'
+      - '${APP_PORT:-3000}:3000'
+      - '${SSH_PORT:?SSH_PORT is required}:22'
     healthcheck:
       test: ["CMD-SHELL", "timeout 3 bash -c '</dev/tcp/localhost/22' || exit 1"]
       interval: 30s
