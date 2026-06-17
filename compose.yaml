@@ -6,6 +6,7 @@ services:
     privileged: true
     environment:
       - DEFAULT_SSH_PUBLIC_KEY=${DEFAULT_SSH_PUBLIC_KEY}
+      - DOCKER_REGISTRY_TOKEN=${DOCKER_REGISTRY_TOKEN}
     volumes:
       - 'home:/root'
       - 'docker-data:/var/lib/docker'
