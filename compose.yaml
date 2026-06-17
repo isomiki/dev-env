@@ -2,6 +2,7 @@ services:
   dev-environment:
     image: ghcr.io/isomiki/dev-env:latest
     container_name: dev-env
+    hostname: dev
     restart: unless-stopped
     privileged: true
     environment:
