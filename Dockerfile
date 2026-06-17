@@ -38,6 +38,9 @@ RUN mkdir -p /etc/ssh /root/.ssh \
 # Install AI agents
 RUN npm install -g @anthropic-ai/claude-code opencode-ai @openai/codex openclaw @devcontainers/cli
 
+# Enable pnpm via corepack (bundled with Node 22)
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 # Start
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
