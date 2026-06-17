@@ -40,7 +40,7 @@ ENV PATH="$FNM_DIR:$FNM_DIR/aliases/default/bin:$PATH"
 RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "$FNM_DIR" --skip-shell \
     && fnm install 24 \
     && fnm default 24 \
-    && printf 'export FNM_DIR=%s\nexport PATH="$FNM_DIR:$FNM_DIR/aliases/default/bin:$PATH"\neval "$(fnm env --use-on-cd)"\n' "$FNM_DIR" \
+    && printf 'export FNM_DIR=%s\nexport PATH="$FNM_DIR:$FNM_DIR/aliases/default/bin:$PATH"\n' "$FNM_DIR" \
         > /etc/profile.d/fnm.sh
 
 # Agent CLIs (claude, opencode, codex, openclaw) are installed at runtime by
@@ -49,6 +49,13 @@ RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "$FNM_D
 # login shells (sshd doesn't inherit the Docker ENV); harmless before they exist.
 RUN printf 'export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.openclaw/bin:$PATH"\n' \
         > /etc/profile.d/agents.sh
+
+# profile.d is only sourced by *login* shells; tmux (and other) interactive shells
+# are non-login, so load it for them too. Also run fnm's cd-hook here in the native
+# shell — it can't go in profile.d, which zsh sources under sh-emulation (breaks the
+# zsh-flavored `fnm env` output, esp. with extendedglob). Runs before ~/.zshrc.
+RUN printf '\nfor f in /etc/profile.d/*.sh; do [ -r "$f" ] && . "$f"; done\ncommand -v fnm >/dev/null && eval "$(fnm env --use-on-cd)"\n' \
+    | tee -a /etc/zsh/zshrc >> /etc/bash.bashrc
 
 # devcontainers CLI (no standalone installer; stays an npm global on the default Node)
 RUN npm install -g @devcontainers/cli
