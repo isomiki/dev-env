@@ -2,13 +2,11 @@ FROM debian:stable-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install base packages + Node.js 22
+# Install base packages
 RUN apt update && apt install -y --no-install-recommends \
     git curl python3 python3-pip openssh-server tmux zsh sudo less neovim jq htop \
     ca-certificates gnupg build-essential libssl-dev pkg-config libsasl2-2 libnss3 ranger eza \
     zlib1g-dev libyaml-dev libffi-dev libreadline-dev libgdbm-dev \
-    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -36,10 +34,19 @@ RUN mkdir -p /etc/ssh /root/.ssh \
     && sed -i 's/^[#[:space:]]*PubkeyAuthentication.*$/PubkeyAuthentication yes/' /etc/ssh/sshd_config \
     && sed -i 's/^[#[:space:]]*X11Forwarding.*$/X11Forwarding no/' /etc/ssh/sshd_config
 
+# Install fnm + Node 24 (default; per-project switching via .node-version/.nvmrc)
+ENV FNM_DIR=/usr/local/fnm
+ENV PATH="$FNM_DIR:$FNM_DIR/aliases/default/bin:$PATH"
+RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "$FNM_DIR" --skip-shell \
+    && fnm install 24 \
+    && fnm default 24 \
+    && printf 'export FNM_DIR=%s\nexport PATH="$FNM_DIR:$FNM_DIR/aliases/default/bin:$PATH"\neval "$(fnm env --use-on-cd)"\n' "$FNM_DIR" \
+        > /etc/profile.d/fnm.sh
+
 # Install AI agents
 RUN npm install -g @anthropic-ai/claude-code opencode-ai @openai/codex openclaw @devcontainers/cli
 
-# Enable pnpm via corepack (bundled with Node 22)
+# Enable pnpm via corepack (bundled with Node 24)
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Install Docker engine (docker-in-docker; requires privileged container)

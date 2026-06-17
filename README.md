@@ -1,6 +1,6 @@
 # Remote dev sandbox
 
-Debian container with SSH + the usual dev tooling (git, node 22, pnpm, python, ruby via rbenv, nvim, tmux, zsh, eza, ranger) and AI agents (claude-code, codex, opencode, openclaw) preinstalled. Docker-in-Docker enabled.
+Debian container with SSH + the usual dev tooling (git, node 24 via fnm, pnpm, python, ruby via rbenv, nvim, tmux, zsh, eza, ranger) and AI agents (claude-code, codex, opencode, openclaw) preinstalled. Docker-in-Docker enabled.
 
 ## Run
 
