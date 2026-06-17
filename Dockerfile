@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install base packages
 RUN apt update && apt install -y --no-install-recommends \
     git curl python3 python3-pip openssh-server tmux zsh sudo less neovim jq htop \
-    ca-certificates gnupg build-essential libssl-dev pkg-config libsasl2-2 libnss3 ranger eza \
+    ca-certificates gnupg build-essential libssl-dev pkg-config libsasl2-2 libnss3 ranger eza unzip \
     zlib1g-dev libyaml-dev libffi-dev libreadline-dev libgdbm-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -43,8 +43,15 @@ RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "$FNM_D
     && printf 'export FNM_DIR=%s\nexport PATH="$FNM_DIR:$FNM_DIR/aliases/default/bin:$PATH"\neval "$(fnm env --use-on-cd)"\n' "$FNM_DIR" \
         > /etc/profile.d/fnm.sh
 
-# Install AI agents
-RUN npm install -g @anthropic-ai/claude-code opencode-ai @openai/codex openclaw @devcontainers/cli
+# Agent CLIs (claude, opencode, codex, openclaw) are installed at runtime by
+# entrypoint.sh, because they live in /root — the home volume — and self-heal on
+# any volume (fresh or existing). Here we only put their bin dirs on PATH for SSH
+# login shells (sshd doesn't inherit the Docker ENV); harmless before they exist.
+RUN printf 'export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.openclaw/bin:$PATH"\n' \
+        > /etc/profile.d/agents.sh
+
+# devcontainers CLI (no standalone installer; stays an npm global on the default Node)
+RUN npm install -g @devcontainers/cli
 
 # Enable pnpm via corepack (bundled with Node 24)
 RUN corepack enable && corepack prepare pnpm@latest --activate

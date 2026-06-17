@@ -32,6 +32,18 @@ if [ -n "$DOCKER_REGISTRY_TOKEN" ]; then
     chmod 600 /etc/profile.d/docker-creds.sh
 fi
 
+# Install agent CLIs into /root (the persistent home volume) if missing. Runs in
+# the background so SSH comes up immediately; a near-instant no-op once installed.
+# Each is independent and non-fatal — comment one out to drop that agent. Logs to
+# /var/log/agent-install.log.
+(
+    set +e
+    [ -x /root/.local/bin/claude ]      || curl -fsSL https://claude.ai/install.sh | bash -s -- 2.1.179
+    [ -x /root/.opencode/bin/opencode ] || curl -fsSL https://opencode.ai/install | bash -s -- --version 1.17.7
+    [ -x /root/.local/bin/codex ]       || curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh -s -- --release 0.140.0
+    [ -x /root/.openclaw/bin/openclaw ] || curl -fsSL https://openclaw.ai/install-cli.sh | bash -s -- --version 2026.6.8 --prefix /root/.openclaw
+) > /var/log/agent-install.log 2>&1 &
+
 exec /usr/sbin/sshd -D \
     -o HostKey=/root/.ssh/ssh_host_ed25519_key \
     -o HostKey=/root/.ssh/ssh_host_rsa_key
