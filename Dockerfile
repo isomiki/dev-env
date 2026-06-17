@@ -88,6 +88,14 @@ RUN rbenv install 4.0.5 \
     && rbenv install 3.4.3 \
     && rbenv global 4.0.5
 
+# Install Bun (standalone runtime/pkg-manager; independent of fnm/Node/pnpm).
+# Placed late so adding/bumping it doesn't invalidate the Ruby-compile cache.
+ENV BUN_INSTALL=/usr/local/bun
+ENV PATH="$BUN_INSTALL/bin:$PATH"
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.14" \
+    && printf 'export BUN_INSTALL=%s\nexport PATH="$BUN_INSTALL/bin:$PATH"\n' "$BUN_INSTALL" \
+        > /etc/profile.d/bun.sh
+
 # Start
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
