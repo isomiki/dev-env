@@ -21,7 +21,9 @@ ssh root@<host>
   - `DEFAULT_SSH_PUBLIC_KEY` (required) — your pubkey, injected into `authorized_keys`.
   - `SSH_PORT` (required) — host port mapped to container `22`.
   - `DOCKER_REGISTRY_TOKEN` (optional) — for a private registry; exposed in your login shell so you can log in manually, e.g. `echo "$DOCKER_REGISTRY_TOKEN" | docker login ghcr.io -u <user> --password-stdin`.
-  - `APP_PORT` (optional, default `3000`) — host port mapped to your app's container `3000`.
+  - `APP_PORT` (optional) — host port mapped to your app's container `3000`.
+  - `MEM_LIMIT` / `MEMSWAP_LIMIT` (optional) — container memory cap; keep them equal to disable container swap (clean OOM instead of host thrash). `MEMSWAP_LIMIT` must be ≥ `MEM_LIMIT`. Size below host RAM, leaving headroom for the host and other services.
+  - `CPUS` (optional) — vCPU cap for the container; leave headroom so the host stays responsive under load.
 
 ## Notes
 
