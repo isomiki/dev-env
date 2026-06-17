@@ -6,6 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt install -y --no-install-recommends \
     git curl python3 python3-pip openssh-server tmux zsh sudo less neovim jq htop \
     ca-certificates gnupg build-essential libssl-dev pkg-config libsasl2-2 libnss3 ranger eza \
+    zlib1g-dev libyaml-dev libffi-dev libreadline-dev libgdbm-dev \
     && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean \
@@ -52,6 +53,19 @@ RUN install -m 0755 -d /etc/apt/keyrings \
         docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Install rbenv + ruby-build (Ruby version manager)
+ENV RBENV_ROOT=/usr/local/rbenv
+RUN git clone --depth 1 https://github.com/rbenv/rbenv.git "$RBENV_ROOT" \
+    && git clone --depth 1 https://github.com/rbenv/ruby-build.git "$RBENV_ROOT/plugins/ruby-build" \
+    && printf 'export RBENV_ROOT=%s\nexport PATH="$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH"\neval "$(rbenv init -)"\n' "$RBENV_ROOT" \
+        > /etc/profile.d/rbenv.sh
+
+# Bake in Ruby versions (4.0.5 as default; 3.4.3 for legacy projects via .ruby-version)
+ENV PATH="$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH"
+RUN rbenv install 4.0.5 \
+    && rbenv install 3.4.3 \
+    && rbenv global 4.0.5
 
 # Start
 COPY entrypoint.sh /entrypoint.sh
