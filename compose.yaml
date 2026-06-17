@@ -3,10 +3,12 @@ services:
     image: ghcr.io/isomiki/dev-env:latest
     container_name: dev-env
     restart: unless-stopped
+    privileged: true
     environment:
       - DEFAULT_SSH_PUBLIC_KEY=${DEFAULT_SSH_PUBLIC_KEY}
     volumes:
       - 'home:/root'
+      - 'docker-data:/var/lib/docker'
     ports:
       - '3001:3000'
       - '60001:22'

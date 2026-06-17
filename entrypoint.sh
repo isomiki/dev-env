@@ -21,6 +21,9 @@ if [ ! -f /root/.ssh/ssh_host_ed25519_key ]; then
     ssh-keygen -t rsa -b 4096 -f /root/.ssh/ssh_host_rsa_key -N ""
 fi
 
+# Start the Docker daemon in the background (docker-in-docker)
+dockerd > /var/log/dockerd.log 2>&1 &
+
 exec /usr/sbin/sshd -D \
     -o HostKey=/root/.ssh/ssh_host_ed25519_key \
     -o HostKey=/root/.ssh/ssh_host_rsa_key
