@@ -12,14 +12,14 @@ services:
     memswap_limit: ${MEMSWAP_LIMIT:-3g}
     cpus: ${CPUS:-1.5}
     environment:
-      - DEFAULT_SSH_PUBLIC_KEY=${DEFAULT_SSH_PUBLIC_KEY}
-      - DOCKER_REGISTRY_TOKEN=${DOCKER_REGISTRY_TOKEN}
+      - DEFAULT_SSH_PUBLIC_KEY=${DEFAULT_SSH_PUBLIC_KEY:-}
+      - DOCKER_REGISTRY_TOKEN=${DOCKER_REGISTRY_TOKEN:-}
     volumes:
       - 'home:/root'
       - 'docker-data:/var/lib/docker'
     ports:
       - '${APP_PORT:-3000}:3000'
-      - '${SSH_PORT:?SSH_PORT is required}:22'
+      - '${SSH_PORT:-2222}:22'
     healthcheck:
       test: ["CMD-SHELL", "timeout 3 bash -c '</dev/tcp/localhost/22' || exit 1"]
       interval: 30s
