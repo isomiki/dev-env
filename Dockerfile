@@ -6,6 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt install -y --no-install-recommends \
     git curl python3 python3-pip openssh-server tmux zsh sudo less neovim jq htop \
     ca-certificates gnupg build-essential libssl-dev pkg-config libsasl2-2 libnss3 ranger eza unzip \
+    man-db manpages \
     zlib1g-dev libyaml-dev libffi-dev libreadline-dev libgdbm-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
