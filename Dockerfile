@@ -2,12 +2,14 @@ FROM debian:stable-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install base packages
+# Build- and config-critical packages (rarely change; needed by later stages —
+# Ruby/Node build deps, apt-key tooling, chsh, sshd config). Keep this layer stable
+# so edits below don't invalidate the expensive Ruby compile.
 RUN apt update && apt install -y --no-install-recommends \
-    git curl python3 python3-pip openssh-server tmux zsh sudo less neovim jq htop \
-    ca-certificates gnupg build-essential libssl-dev pkg-config libsasl2-2 libnss3 ranger eza unzip \
-    man-db manpages \
+    ca-certificates curl gnupg git unzip \
+    build-essential pkg-config libssl-dev libsasl2-2 libnss3 \
     zlib1g-dev libyaml-dev libffi-dev libreadline-dev libgdbm-dev \
+    zsh openssh-server python3 python3-pip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -96,6 +98,14 @@ ENV PATH="$BUN_INSTALL/bin:$PATH"
 RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.14" \
     && printf 'export BUN_INSTALL=%s\nexport PATH="$BUN_INSTALL/bin:$PATH"\n' "$BUN_INSTALL" \
         > /etc/profile.d/bun.sh
+
+# Convenience CLI tools — no build dependents, so they live here at the cheap tail.
+# Add/remove tools on this line and only this layer (+ the COPY below) rebuilds;
+# the Ruby compile and everything above stays cached.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tmux sudo less neovim jq htop ranger eza man-db manpages \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Start
 COPY entrypoint.sh /entrypoint.sh
