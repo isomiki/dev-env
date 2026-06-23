@@ -5,11 +5,13 @@ services:
     hostname: dev
     restart: unless-stopped
     privileged: true
-    # Resource caps so a runaway build can't starve the host. memswap_limit ==
-    # mem_limit disables container swap (memory spikes are OOM-killed cleanly
-    # rather than thrashing the host); cpus leaves headroom for the host.
-    mem_limit: ${MEM_LIMIT:-3g}
-    memswap_limit: ${MEMSWAP_LIMIT:-3g}
+    # Resource caps. mem_limit is the container's RAM ceiling; memswap_limit is
+    # RAM+swap, so the gap (here 2g) is how much it may spill to *host* swap before
+    # being OOM-killed. Allowing some swap avoids cgroup refault-thrash when the
+    # container hits its RAM cap (requires swap to exist on the host). cpus leaves
+    # headroom so the host stays responsive under load.
+    mem_limit: ${MEM_LIMIT:-4g}
+    memswap_limit: ${MEMSWAP_LIMIT:-6g}
     cpus: ${CPUS:-1.5}
     environment:
       - DEFAULT_SSH_PUBLIC_KEY=${DEFAULT_SSH_PUBLIC_KEY:-}
