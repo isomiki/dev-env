@@ -2,6 +2,19 @@ FROM debian:stable-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Debian's slim images drop docs at unpack time via dpkg path-exclude rules, so
+# man-db alone gets you the reader with nothing to read. Delete the rules (they
+# also strip /usr/share/groff, which man needs to render), then reinstall every
+# package the base image already unpacked so their pages come back. Must stay the
+# first layer: everything installed below then keeps its man pages for free.
+RUN rm -f /etc/dpkg/dpkg.cfg.d/docker /etc/dpkg/dpkg.cfg.d/excludes \
+    && apt-get update \
+    && apt-get install -y --reinstall \
+        $(dpkg-query -f '${binary:Package} ${db:Status-Status}\n' -W \
+          | awk '$2 == "installed" { print $1 }') \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 # Build- and config-critical packages (rarely change; needed by later stages —
 # Ruby/Node build deps, apt-key tooling, chsh, sshd config). Keep this layer stable
 # so edits below don't invalidate the expensive Ruby compile.
