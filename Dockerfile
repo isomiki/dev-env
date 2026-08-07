@@ -120,6 +120,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Vercel CLI. An npm global on the default Node, so it lands in $FNM_DIR (baked
+# into the image, not the /root volume) and is on PATH for login shells already.
+# Auth is per-user state under /root, so `vercel login` survives restarts.
+RUN npm install -g vercel
+
 # Start
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
