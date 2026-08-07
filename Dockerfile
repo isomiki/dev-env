@@ -103,7 +103,7 @@ RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.14" \
 # Add/remove tools on this line and only this layer (+ the COPY below) rebuilds;
 # the Ruby compile and everything above stays cached.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    tmux sudo less neovim jq htop ranger eza man-db manpages \
+    tmux sudo less neovim jq htop ranger eza man-db manpages cron \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

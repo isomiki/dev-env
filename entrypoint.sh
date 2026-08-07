@@ -24,6 +24,11 @@ fi
 # Start the Docker daemon in the background (docker-in-docker)
 dockerd > /var/log/dockerd.log 2>&1 &
 
+# Start cron (daemonizes itself). The container runs neither syslog nor an MTA, so
+# cron's own logging and any job output are both discarded — redirect explicitly in
+# the crontab line, e.g. `* * * * * /path/job >> /var/log/job.log 2>&1`.
+cron
+
 # Expose the registry password to interactive SSH shells so you can `docker login`
 # yourself. sshd doesn't inherit the container env, so write it to a profile snippet
 # (sourced by both bash and zsh login shells via /etc/profile).
