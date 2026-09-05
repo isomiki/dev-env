@@ -59,7 +59,7 @@ RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "$FNM_D
     && printf 'export FNM_DIR=%s\nexport PATH="$FNM_DIR:$FNM_DIR/aliases/default/bin:$PATH"\n' "$FNM_DIR" \
         > /etc/profile.d/fnm.sh
 
-# Agent CLIs (claude, codex, grok, opencode, openclaw) are installed at runtime by
+# Agent CLIs (claude, codex, grok, opencode, omp, openclaw) are installed at runtime by
 # entrypoint.sh, because they live in /root — the home volume — and self-heal on
 # any volume (fresh or existing). Here we only put their bin dirs on PATH for SSH
 # login shells (sshd doesn't inherit the Docker ENV); harmless before they exist.
