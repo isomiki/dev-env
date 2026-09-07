@@ -2,6 +2,8 @@
 
 Debian container with SSH + the usual dev tooling (git, node 24 via fnm, pnpm, bun, python, ruby via rbenv, nvim, tmux, zsh, eza, ranger) and AI agents (claude-code, codex, grok, opencode, omp, openclaw) preinstalled. Docker-in-Docker enabled.
 
+Also includes [Orca](https://github.com/stablyai/orca) (v1.4.197, headless server + CLI) and [Herdr](https://herdr.dev/docs/install/) (terminal agent multiplexer). Orca is baked into the image; Herdr installs on first boot into the persistent home volume alongside the agent CLIs. Installation output is in `/var/log/agent-install.log`.
+
 ## Run
 
 ```bash
@@ -13,6 +15,14 @@ SSH in:
 ```bash
 ssh root@<host>
 ```
+
+Run `herdr` to open its terminal workspace. Start Orca's headless server with:
+
+```bash
+ORCA_APPIMAGE_NO_SANDBOX=1 LIBGL_ALWAYS_SOFTWARE=1 orca serve --port 6768 --pairing-address localhost
+```
+
+The sandbox runs as root, so Orca needs the explicit Chromium sandbox override above. From your laptop, forward its port with `ssh -L 6768:localhost:6768 root@<host>`, then use the pairing link printed by Orca. Keep the server running in tmux or Herdr. Its settings and sessions live in the persistent `/root` volume. See the [headless Linux guide](https://github.com/stablyai/orca/blob/main/docs/reference/headless-linux-server.md) for other connection options.
 
 ## Setup
 

@@ -59,7 +59,7 @@ RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "$FNM_D
     && printf 'export FNM_DIR=%s\nexport PATH="$FNM_DIR:$FNM_DIR/aliases/default/bin:$PATH"\n' "$FNM_DIR" \
         > /etc/profile.d/fnm.sh
 
-# Agent CLIs (claude, codex, grok, opencode, omp, openclaw) are installed at runtime by
+# Agent CLIs (claude, codex, grok, opencode, omp, openclaw) and herdr are installed at runtime by
 # entrypoint.sh, because they live in /root — the home volume — and self-heal on
 # any volume (fresh or existing). Here we only put their bin dirs on PATH for SSH
 # login shells (sshd doesn't inherit the Docker ENV); harmless before they exist.
@@ -124,6 +124,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # into the image, not the /root volume) and is on PATH for login shells already.
 # Auth is per-user state under /root, so `vercel login` survives restarts.
 RUN npm install -g vercel
+
+# Orca's Debian package includes its CLI; Xvfb and Electron libraries are needed
+# even for headless `orca serve`. Keep this after the expensive build layers.
+ARG ORCA_VERSION=1.4.197
+RUN arch="$(dpkg --print-architecture)" \
+    && curl -fSL --retry 3 "https://github.com/stablyai/orca/releases/download/v${ORCA_VERSION}/orca-ide_${ORCA_VERSION}_${arch}.deb" \
+        -o /tmp/orca.deb \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends /tmp/orca.deb \
+        file xvfb libgtk-3-0t64 libnss3 libatk1.0-0t64 libatk-bridge2.0-0t64 \
+        libgbm1 libasound2t64 libxtst6 libcups2t64 libdrm2 libxkbcommon0 \
+        libpango-1.0-0 libcairo2 libatspi2.0-0t64 libxcomposite1 libxdamage1 \
+        libxfixes3 libxrandr2 libxrender1 libx11-xcb1 libxcb-dri3-0 libxss1 \
+    && test -x /usr/bin/orca-ide \
+    && ln -s /usr/bin/orca-ide /usr/local/bin/orca \
+    && orca --version \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/orca.deb
 
 # Start
 COPY entrypoint.sh /entrypoint.sh

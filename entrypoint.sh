@@ -49,6 +49,7 @@ fi
     [ -x /root/.opencode/bin/opencode ] || curl -fsSL https://opencode.ai/install | bash -s -- --version 1.17.7
     [ -x /root/.local/bin/omp ]         || curl -fsSL https://omp.sh/install | sh -s -- --binary
     [ -x /root/.openclaw/bin/openclaw ] || curl -fsSL https://openclaw.ai/install-cli.sh | bash -s -- --version 2026.6.8 --prefix /root/.openclaw
+    [ -x /root/.local/bin/herdr ]       || curl -fsSL https://herdr.dev/install.sh | HERDR_INSTALL_DIR=/root/.local/bin sh
 ) > /var/log/agent-install.log 2>&1 &
 
 exec /usr/sbin/sshd -D \
