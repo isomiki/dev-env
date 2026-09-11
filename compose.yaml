@@ -1,6 +1,10 @@
 services:
   dev-environment:
     image: ghcr.io/isomiki/dev-env:latest
+    # :latest is a mutable tag, so `docker compose up` would happily reuse a stale
+    # locally-cached image instead of pulling the current one. Force a re-pull on
+    # every deploy; the trade-off is `up` fails outright if the registry is down.
+    pull_policy: always
     container_name: dev-env
     hostname: dev
     restart: unless-stopped
