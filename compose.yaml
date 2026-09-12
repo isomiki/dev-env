@@ -26,6 +26,12 @@ services:
     ports:
       - '${APP_PORT:-3000}:3000'
       - '${SSH_PORT:-2222}:22'
+      # Orca's headless server. Bound to host loopback by default so it's only
+      # reachable via the README's `ssh -L` tunnel, not the public interface -
+      # a pairing URL carries a device token and E2EE material, and remote
+      # servers are beta. Set ORCA_BIND to the host's Tailscale IP to open it
+      # to the tailnet instead, for a direct connection without a tunnel.
+      - '${ORCA_BIND:-127.0.0.1}:${ORCA_PORT:-6768}:6768'
     healthcheck:
       test: ["CMD-SHELL", "timeout 3 bash -c '</dev/tcp/localhost/22' || exit 1"]
       interval: 30s

@@ -22,7 +22,12 @@ Run `herdr` to open its terminal workspace. Start Orca's headless server with:
 ORCA_APPIMAGE_NO_SANDBOX=1 LIBGL_ALWAYS_SOFTWARE=1 orca serve --port 6768 --pairing-address localhost
 ```
 
-The sandbox runs as root, so Orca needs the explicit Chromium sandbox override above. From your laptop, forward its port with `ssh -L 6768:localhost:6768 root@<host>`, then use the pairing link printed by Orca. Keep the server running in tmux or Herdr. Its settings and sessions live in the persistent `/root` volume. See the [headless Linux guide](https://github.com/stablyai/orca/blob/main/docs/reference/headless-linux-server.md) for other connection options.
+The sandbox runs as root, so Orca needs the explicit Chromium sandbox override above. Keep the server running in tmux or Herdr. Its settings and sessions live in the persistent `/root` volume. See the [headless Linux guide](https://github.com/stablyai/orca/blob/main/docs/reference/headless-linux-server.md) for other connection options.
+
+Two ways to reach it from your laptop:
+
+- **SSH tunnel (default, works out of the box):** forward its port with `ssh -L 6768:localhost:6768 root@<host>`, then use the pairing link printed by Orca. This works because Orca's port is published on host loopback by default.
+- **Direct via Tailscale (no tunnel to keep open):** set `ORCA_BIND` to the host's Tailscale IP (see below) so the port is published on the tailnet instead of loopback, then use the pairing link directly against that address.
 
 ## Setup
 
@@ -32,6 +37,8 @@ The sandbox runs as root, so Orca needs the explicit Chromium sandbox override a
   - `SSH_PORT` (optional, default `2222`) — host port mapped to container `22`. Set it to your chosen port; the default is only a parse-time fallback.
   - `DOCKER_REGISTRY_TOKEN` (optional) — for a private registry; exposed in your login shell so you can log in manually, e.g. `echo "$DOCKER_REGISTRY_TOKEN" | docker login ghcr.io -u <user> --password-stdin`.
   - `APP_PORT` (optional) — host port mapped to your app's container `3000`.
+  - `ORCA_BIND` (optional, default `127.0.0.1`) — bind address for Orca's port. The default publishes on host loopback only, reachable via the `ssh -L` tunnel above. Set it to the host's Tailscale IP to publish on the tailnet instead, for a direct connection without a tunnel. Never set it to `0.0.0.0` — that exposes the Orca pairing endpoint (device token + E2EE material) on the public interface.
+  - `ORCA_PORT` (optional, default `6768`) — host port mapped to Orca's container `6768`.
   - `MEM_LIMIT` / `MEMSWAP_LIMIT` (optional) — container memory cap; keep them equal to disable container swap (clean OOM instead of host thrash). `MEMSWAP_LIMIT` must be ≥ `MEM_LIMIT`. Size below host RAM, leaving headroom for the host and other services.
   - `CPUS` (optional) — vCPU cap for the container; leave headroom so the host stays responsive under load.
 
