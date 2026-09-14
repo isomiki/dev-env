@@ -20,6 +20,10 @@ services:
     environment:
       - DEFAULT_SSH_PUBLIC_KEY=${DEFAULT_SSH_PUBLIC_KEY:-}
       - DOCKER_REGISTRY_TOKEN=${DOCKER_REGISTRY_TOKEN:-}
+      # Read by entrypoint.sh, so unlike ORCA_BIND/ORCA_PORT (compose-level port
+      # mapping) these have to be passed into the container to have any effect.
+      - ORCA_AUTOSTART=${ORCA_AUTOSTART:-}
+      - ORCA_PAIRING_ADDRESS=${ORCA_PAIRING_ADDRESS:-}
     volumes:
       - 'home:/root'
       - 'docker-data:/var/lib/docker'

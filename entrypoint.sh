@@ -52,6 +52,30 @@ fi
     [ -x /root/.local/bin/herdr ]       || curl -fsSL https://herdr.dev/install.sh | HERDR_INSTALL_DIR=/root/.local/bin sh
 ) > /var/log/agent-install.log 2>&1 &
 
+# Start Orca's headless runtime in the background, logging to /var/log/orca-serve.log.
+# Backgrounded because `orca serve` never returns, and wrapped in a `set +e` subshell
+# so no failure here — missing binary, crash on startup — can trip this script's
+# `set -e` and leave the container without sshd. ELECTRON_DISABLE_SANDBOX is what
+# makes it work as root: this is a system (.deb) install, not an AppImage, so the
+# AppImage-only ORCA_APPIMAGE_NO_SANDBOX is never read and Electron otherwise refuses
+# to run as root. DISPLAY is left unset on purpose — Orca starts and verifies its own
+# Xvfb, and rejects one it is handed. Set ORCA_AUTOSTART=0 to run it by hand instead.
+if [ "${ORCA_AUTOSTART:-1}" != "0" ]; then
+    (
+        set +e
+        command -v orca > /dev/null 2>&1 || exit 0
+        unset DISPLAY
+        # --port is a literal on purpose: the container side of compose.yaml's port
+        # mapping is fixed at 6768. ORCA_PORT is the HOST side of that mapping and
+        # must not be used here — serving on it inside the container would aim the
+        # mapping at a port nothing is listening on.
+        ELECTRON_DISABLE_SANDBOX=1 LIBGL_ALWAYS_SOFTWARE=1 \
+            orca serve \
+                --port 6768 \
+                --pairing-address "${ORCA_PAIRING_ADDRESS:-localhost}"
+    ) > /var/log/orca-serve.log 2>&1 &
+fi
+
 exec /usr/sbin/sshd -D \
     -o HostKey=/root/.ssh/ssh_host_ed25519_key \
     -o HostKey=/root/.ssh/ssh_host_rsa_key
