@@ -41,7 +41,7 @@ See the [headless Linux guide](https://github.com/stablyai/orca/blob/main/docs/r
 Two ways to reach it from your laptop:
 
 - **SSH tunnel (default, works out of the box):** forward its port with `ssh -L 6768:localhost:6768 root@<host>`, then use the pairing link printed by Orca. This works because Orca's port is published on host loopback by default.
-- **Direct via Tailscale (no tunnel to keep open):** set `ORCA_BIND` to the host's Tailscale IP (see below) so the port is published on the tailnet instead of loopback, then use the pairing link directly against that address.
+- **Direct via Tailscale (no tunnel to keep open):** set `ORCA_BIND` to the host's Tailscale IP (see below) so the port is published on the tailnet instead of loopback, **and** set `ORCA_PAIRING_ADDRESS` to the address you'll dial, so the pairing URL points at the tailnet rather than at `localhost`. Both are needed; setting only the first publishes a reachable port whose pairing link still says `localhost`.
 
 ## Setup
 
@@ -52,9 +52,9 @@ Two ways to reach it from your laptop:
   - `DOCKER_REGISTRY_TOKEN` (optional) — for a private registry; exposed in your login shell so you can log in manually, e.g. `echo "$DOCKER_REGISTRY_TOKEN" | docker login ghcr.io -u <user> --password-stdin`.
   - `APP_PORT` (optional) — host port mapped to your app's container `3000`.
   - `ORCA_BIND` (optional, default `127.0.0.1`) — bind address for Orca's port. The default publishes on host loopback only, reachable via the `ssh -L` tunnel above. Set it to the host's Tailscale IP to publish on the tailnet instead, for a direct connection without a tunnel. Never set it to `0.0.0.0` — that exposes the Orca pairing endpoint (device token + E2EE material) on the public interface.
-  - `ORCA_PORT` (optional, default `6768`) — host port mapped to Orca's container `6768`. It is a compose-level mapping only and is not passed into the container, so the server inside always listens on `6768`.
+  - `ORCA_PORT` (optional, default `6768`) — **host** port only. It is one half of a compose port mapping whose container half is fixed at `6768`, and it is deliberately not passed into the container: Orca always serves on `6768` inside, whatever you set here. Change it when `6768` is already taken on the host, not to move Orca's own port.
   - `ORCA_AUTOSTART` (optional, default `1`) — set to `0` to stop the entrypoint from starting `orca serve`, e.g. to run it by hand while debugging. Any other value (or unset) starts it.
-  - `ORCA_PAIRING_ADDRESS` (optional, default `localhost`) — the `--pairing-address` the auto-started server advertises. `localhost` is right for the `ssh -L` tunnel; set it to the host's Tailscale IP or hostname if you reach Orca directly over the tailnet.
+  - `ORCA_PAIRING_ADDRESS` (optional, default `localhost`) — the address the auto-started server puts in its pairing URL. **It has to match what your client dials.** `localhost` is correct for the default `ssh -L` tunnel, and only for that. If you set `ORCA_BIND` for the direct tailnet path, set this to the same address you dial — the two go together, and this one is not derived from `ORCA_BIND` (the address the server binds on and the address a client reaches it by are not always the same, e.g. a MagicDNS name vs. the bare IP it resolves to).
   - `MEM_LIMIT` / `MEMSWAP_LIMIT` (optional) — container memory cap; keep them equal to disable container swap (clean OOM instead of host thrash). `MEMSWAP_LIMIT` must be ≥ `MEM_LIMIT`. Size below host RAM, leaving headroom for the host and other services.
   - `CPUS` (optional) — vCPU cap for the container; leave headroom so the host stays responsive under load.
 

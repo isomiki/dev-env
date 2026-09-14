@@ -65,9 +65,13 @@ if [ "${ORCA_AUTOSTART:-1}" != "0" ]; then
         set +e
         command -v orca > /dev/null 2>&1 || exit 0
         unset DISPLAY
+        # --port is a literal on purpose: the container side of compose.yaml's port
+        # mapping is fixed at 6768. ORCA_PORT is the HOST side of that mapping and
+        # must not be used here — serving on it inside the container would aim the
+        # mapping at a port nothing is listening on.
         ELECTRON_DISABLE_SANDBOX=1 LIBGL_ALWAYS_SOFTWARE=1 \
             orca serve \
-                --port "${ORCA_PORT:-6768}" \
+                --port 6768 \
                 --pairing-address "${ORCA_PAIRING_ADDRESS:-localhost}"
     ) > /var/log/orca-serve.log 2>&1 &
 fi
