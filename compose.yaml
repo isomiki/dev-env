@@ -24,9 +24,11 @@ services:
       # mapping) these have to be passed into the container to have any effect.
       - ORCA_AUTOSTART=${ORCA_AUTOSTART:-}
       - ORCA_PAIRING_ADDRESS=${ORCA_PAIRING_ADDRESS:-}
+      - HERDR_SOCKET_PATH=${HERDR_SOCKET_PATH:-}
     volumes:
       - 'home:/root'
       - 'docker-data:/var/lib/docker'
+      - '/srv/herdr:/herdr'
     ports:
       - '${APP_PORT:-3000}:3000'
       - '${SSH_PORT:-2222}:22'
