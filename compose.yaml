@@ -26,6 +26,7 @@ services:
       - ORCA_PAIRING_ADDRESS=${ORCA_PAIRING_ADDRESS:-}
       - VOICELINE_AUTOSTART=${VOICELINE_AUTOSTART:-}
       - VOICELINE_DIR=${VOICELINE_DIR:-}
+      - HERDR_AUTOSTART=${HERDR_AUTOSTART:-}
     volumes:
       - 'home:/root'
       - 'docker-data:/var/lib/docker'

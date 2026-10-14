@@ -2,7 +2,7 @@
 
 Debian container with SSH + the usual dev tooling (git, node 24 via fnm, pnpm, bun, python, ruby via rbenv, nvim, tmux, zsh, eza, ranger) and AI agents (claude-code, codex, grok, opencode, omp, openclaw) preinstalled. Docker-in-Docker enabled.
 
-Also includes [Orca](https://github.com/stablyai/orca) (v1.4.197, headless server + CLI) and [Herdr](https://herdr.dev/docs/install/) (terminal agent multiplexer). Orca is baked into the image and its headless server auto-starts with the container; Herdr installs on first boot into the persistent home volume alongside the agent CLIs. Installation output is in `/var/log/agent-install.log`.
+Also includes [Orca](https://github.com/stablyai/orca) (v1.4.197, headless server + CLI) and [Herdr](https://herdr.dev/docs/install/) (terminal agent multiplexer). Orca is baked into the image and its headless server auto-starts with the container; Herdr installs on first boot into the persistent home volume alongside the agent CLIs, and its headless server auto-starts with the container too, restoring the default session (log: `/var/log/herdr-server.log`), so `herdr` CLI commands and voiceline work without opening the TUI first. Installation output is in `/var/log/agent-install.log`.
 
 Also includes [voiceline](https://github.com/isomiki/voiceline) — a realtime voice line in front of those agents, served from the same container. It is not baked in: clone it onto the home volume and the entrypoint starts it on boot. See [Voiceline](#voiceline).
 
@@ -95,6 +95,7 @@ Logs: `/root/.config/voiceline/voiceline.log` (daemon + server output) and `/var
   - `CPUS` (optional) — vCPU cap for the container; leave headroom so the host stays responsive under load.
   - `VOICELINE_AUTOSTART` (optional, default `1`) — set to `0` to stop the entrypoint from starting voiceline, e.g. to run `bin/voiceline-daemon.sh` by hand while debugging. Any other value (or unset) starts it, if the clone is there.
   - `VOICELINE_DIR` (optional, default `/root/projects/voiceline`) — where voiceline is cloned on the home volume. The entrypoint starts `$VOICELINE_DIR/bin/voiceline-daemon.sh` from there and, if that script is missing, logs a line to `/var/log/voiceline-start.log` and skips it.
+  - `HERDR_AUTOSTART` (optional, default `1`) — set to `0` to stop the entrypoint from starting `herdr server`, e.g. to run it by hand while debugging. Any other value (or unset) starts it, once herdr's first-boot install has put the binary in `/root/.local/bin` (it waits up to ~2 min, then logs a line to `/var/log/herdr-server.log` and skips).
 
 ## Notes
 
