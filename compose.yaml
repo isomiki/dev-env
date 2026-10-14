@@ -24,11 +24,11 @@ services:
       # mapping) these have to be passed into the container to have any effect.
       - ORCA_AUTOSTART=${ORCA_AUTOSTART:-}
       - ORCA_PAIRING_ADDRESS=${ORCA_PAIRING_ADDRESS:-}
-      - HERDR_SOCKET_PATH=${HERDR_SOCKET_PATH:-}
+      - VOICELINE_AUTOSTART=${VOICELINE_AUTOSTART:-}
+      - VOICELINE_DIR=${VOICELINE_DIR:-}
     volumes:
       - 'home:/root'
       - 'docker-data:/var/lib/docker'
-      - '/srv/herdr:/herdr'
     ports:
       - '${APP_PORT:-3000}:3000'
       - '${SSH_PORT:-2222}:22'
@@ -38,6 +38,12 @@ services:
       # servers are beta. Set ORCA_BIND to the host's Tailscale IP to open it
       # to the tailnet instead, for a direct connection without a tunnel.
       - '${ORCA_BIND:-127.0.0.1}:${ORCA_PORT:-6768}:6768'
+    # voiceline's HTTP port. Coolify's proxy routes the voiceline domain to this
+    # container port over the Docker network, so it must be declared but is
+    # deliberately not published on the host - the token in the URL is the only
+    # thing in front of the API, and Coolify terminates TLS for it.
+    expose:
+      - '7940'
     healthcheck:
       test: ["CMD-SHELL", "timeout 3 bash -c '</dev/tcp/localhost/22' || exit 1"]
       interval: 30s

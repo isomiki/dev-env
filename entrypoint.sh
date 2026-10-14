@@ -52,6 +52,29 @@ fi
     [ -x /root/.local/bin/herdr ]       || curl -fsSL https://herdr.dev/install.sh | HERDR_INSTALL_DIR=/root/.local/bin sh
 ) > /var/log/agent-install.log 2>&1 &
 
+# Start voiceline if it is cloned onto the home volume. Its code ($VOICELINE_DIR,
+# default /root/projects/voiceline) and its secrets
+# (/root/.config/voiceline/env, sourced only by the daemon loop, so SSH/herdr
+# shells never see them) both live on the volume, which is why this block
+# installs nothing - it only kicks the supervisor. Same shape as the Orca block
+# below: backgrounded and wrapped in `set +e` so a missing clone or a crash here
+# can never trip this script's `set -e` and leave the container without sshd.
+# voiceline waits for and reconnects to herdr on its own, so it doesn't matter
+# whether herdr is installed or running yet. Daemon logs (server output
+# included): /root/.config/voiceline/voiceline.log. Set VOICELINE_AUTOSTART=0 to
+# run bin/voiceline-daemon.sh by hand instead.
+if [ "${VOICELINE_AUTOSTART:-1}" != "0" ]; then
+    (
+        set +e
+        VOICELINE_DIR="${VOICELINE_DIR:-/root/projects/voiceline}"
+        if [ ! -x "$VOICELINE_DIR/bin/voiceline-daemon.sh" ]; then
+            echo "voiceline: no executable $VOICELINE_DIR/bin/voiceline-daemon.sh; skipping autostart"
+            exit 0
+        fi
+        "$VOICELINE_DIR/bin/voiceline-daemon.sh" start
+    ) >> /var/log/voiceline-start.log 2>&1 &
+fi
+
 # Start Orca's headless runtime in the background, logging to /var/log/orca-serve.log.
 # Backgrounded because `orca serve` never returns, and wrapped in a `set +e` subshell
 # so no failure here — missing binary, crash on startup — can trip this script's
