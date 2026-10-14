@@ -75,6 +75,33 @@ if [ "${VOICELINE_AUTOSTART:-1}" != "0" ]; then
     ) >> /var/log/voiceline-start.log 2>&1 &
 fi
 
+# Start herdr's headless server so voiceline and `herdr` CLI commands work without
+# opening the TUI first. herdr is not in the image - the agent-install block above
+# fetches it into /root/.local/bin on first boot - so poll for the binary instead
+# of assuming it is there (sleep 2, up to ~2 min) and give up with one log line if
+# it never shows. Same shape as the Orca block below: backgrounded and wrapped in
+# `set +e` so a slow install or a crashing server can never trip this script's
+# `set -e` and leave the container without sshd. `herdr server` runs in the
+# foreground and restores the default session with its panes; other named sessions
+# stay stopped until `herdr --session <name>`. Attaching the TUI later just
+# connects to this server, and voiceline reconnects to it on its own. Logs to
+# /var/log/herdr-server.log. Set HERDR_AUTOSTART=0 to run it by hand instead.
+if [ "${HERDR_AUTOSTART:-1}" != "0" ]; then
+    (
+        set +e
+        for _ in $(seq 1 60); do
+            [ -x /root/.local/bin/herdr ] && break
+            sleep 2
+        done
+        if [ ! -x /root/.local/bin/herdr ]; then
+            echo "herdr: /root/.local/bin/herdr never appeared; skipping autostart"
+            exit 0
+        fi
+        # Absolute path on purpose: /root/.local/bin is not on this script's PATH.
+        exec /root/.local/bin/herdr server
+    ) > /var/log/herdr-server.log 2>&1 &
+fi
+
 # Start Orca's headless runtime in the background, logging to /var/log/orca-serve.log.
 # Backgrounded because `orca serve` never returns, and wrapped in a `set +e` subshell
 # so no failure here — missing binary, crash on startup — can trip this script's
